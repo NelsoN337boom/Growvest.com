@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>S Growvest — Investment Platform </title>
+<meta name="description" content=" Growvest — investment UI with admin, deposit flow, and transaction history (front-end only)" />
+<link rel="icon" href="data:,">
+<style>
+  :root{
+    --bg:#0b1020; --card:#0f1830; --muted:#1b2247; --text:#eaf0ff;
+    --sub:#b6c0ff; --accent:#6c8cff; --accent-2:#8ff4cf;
+    --shadow:0 12px 30px rgba(4,10,30,.6);
+    --glass: rgba(255,255,255,.03);
+    --radius:16px;
+    --success:#2dd4bf; --danger:#ff6b6b; --warn:#ffd166;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:
+    radial-gradient(900px 600px at 10% 10%, rgba(108,140,255,.06), transparent),
+    linear-gradient(180deg,#081024 0%, #07101f 100%);color:var(--text);min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1100px;margin:0 auto;padding:28px}
+  header{position:sticky;top:0;background:rgba(6,10,25,.55);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.04);z-index:40}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
+  .brand{display:flex;gap:12px;align-items:center;font-weight:700}
+  .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;box-shadow:0 8px 24px rgba(80,100,255,.12)}
+  .logo svg{width:22px;height:22px}
+  .nav-links{display:flex;gap:18px;align-items:center}
+  .nav-links a{color:var(--sub);padding:8px 12px;border-radius:10px}
+  .nav-links a:hover{background:rgba(255,255,255,.03);color:var(--text)}
+  .cta{display:flex;gap:10px}
+  .btn{border:0;padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
+  .btn.primary{background:linear-gradient(135deg,var(--accent),#4f6dff);color:white;box-shadow:0 8px 20px rgba(79,109,255,.12)}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--text)}
+  .hamburger{display:none}
+  @media(max-width:860px){.nav-links{display:none}.hamburger{display:inline-flex}}
+  /* HERO */
+  .hero{padding:44px 0}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .85fr;gap:26px;align-items:center}
+  .headline{font-size:36px;line-height:1.05;margin:0}
+  .highlight{background:linear-gradient(90deg,var(--accent-2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--sub);margin-top:10px}
+  .hero-card{background:linear-gradient(180deg, rgba(255,255,255,.02), transparent); border:1px solid rgba(255,255,255,.04); padding:18px;border-radius:18px;box-shadow:var(--shadow)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .stat{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.03)}
+  .stat .label{color:var(--sub);font-size:12px}
+  .stat .value{font-weight:800;font-size:18px;margin-top:6px}
+  /* Plans */
+  section{padding:44px 0}
+  .section-title{font-size:22px;margin:0 0 6px}
+  .section-sub{color:var(--sub);margin:0 0 18px}
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .card{background:var(--card);border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,.04)}
+  .card.badge::after{content:"POPULAR";position:absolute;top:18px;right:-36px;padding:6px 56px;background:linear-gradient(135deg,var(--accent-2),var(--accent));color:#072;transform:rotate(35deg);font-weight:800;font-size:11px;border-radius:6px}
+  .price{font-weight:900;font-size:20px;margin-top:8px}
+  .features{color:var(--sub);margin-top:10px}
+  /* grid utils */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:980px){.plans{grid-template-columns:repeat(2,1fr)}.hero-grid{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}
+  @media(max-width:680px){.plans{grid-template-columns:1fr}}
+  /* forms */
+  .input, select, textarea{width:100%;padding:12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:var(--text);outline:none}
+  textarea{min-height:120px}
+  /* footer */
+  footer{padding:28px 0;border-top:1px solid rgba(255,255,255,.04);color:var(--sub)}
+  /* modal-like dashboard etc */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(3,6,12,.6);z-index:80}
+  .modal.show{display:flex}
+  .modal-card{width:min(720px,94vw);background:var(--card);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,.04)}
+  /* dashboard */
+  .dashboard{display:none;padding-bottom:40px}
+  .dash-wrap{display:grid;grid-template-columns:260px 1fr;gap:18px}
+  .side{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,.04)}
+  .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:inline-block}
+  .side a{display:block;padding:10px;border-radius:10px;color:var(--sub);margin-top:8px}
+  .side a.active{background:rgba(255,255,255,.03);color:var(--text)}
+  .panel{background:var(--card);padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,.04)}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:620px){.dash-wrap{grid-template-columns:1fr}.cards{grid-template-columns:1fr}}
+  .kpi{padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{padding:10px;border-bottom:1px solid rgba(255,255,255,.04);text-align:left}
+  .badge{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.06)}
+  .badge.success{background:rgba(45,212,191,.08);color:var(--success);border-color:rgba(45,212,191,.28)}
+  .badge.warn{background:rgba(255,209,102,.08);color:var(--warn);border-color:rgba(255,209,102,.24)}
+  .badge.danger{background:rgba(255,107,107,.08);color:var(--danger);border-color:rgba(255,107,107,.24)}
+  /* toast */
+  .toast{position:fixed;right:18px;bottom:18px;background:var(--card);padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.04);display:none}
+  .toast.show{display:block}
+  /* small */
+  .muted{color:var(--sub);font-size:13px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3l7 5-7 13L5 8l7-5Z" fill="white"/></svg></div>
+        <div>
+          <div style="font-weight:800">S Growvest</div>
+          <div class="muted" style="font-size:12px">Invest smarter • Grow consistently</div>
+        </div>
+      </div>
+      <div class="nav-links" role="navigation" aria-label="Main">
+        <a href="#home" data-scroll>Home</a>
+        <a href="#plans" data-scroll>Plans</a>
+        <a href="#about" data-scroll>About</a>
+        <a href="#contact" data-scroll>Contact</a>
+      </div>
+      <div class="cta">
+        <button class="btn ghost" id="openLogin">Login</button>
+        <button class="btn primary" id="openSignup">Get Started</button>
+        <button class="hamburger" id="hamburger">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="hero" id="home">
+    <div class="container hero-grid">
+      <div>
+        <h1 class="headline">Grow your future with <span class="highlight">S Growvest</span></h1>
+        <p class="sub">Transparent plans, beautiful dashboard, and easy crypto deposits(front-end only).</p>
+        <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn primary" id="ctaStart">Create account</button>
+          <button class="btn ghost" id="ctaLogin">I already have an account</button>
+        </div>
+        <div class="stats" style="margin-top:18px">
+          <div class="stat"><div class="label">Active Users</div><div class="value" id="statUsers">—</div></div>
+          <div class="stat"><div class="label">Assets Tracked</div><div class="value" id="statAum">—</div></div>
+          <div class="stat"><div class="label">Avg. 30d Yield</div><div class="value">—</div></div>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div class="pill muted" style="display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.04)">Secure</div>
+            <h3 style="margin:10px 0 6px">Simulated portfolio preview</h3>
+            <div class="muted">Sign up to see real dashboard view.</div>
+          </div>
+          <div style="width:120px;height:80px;border-radius:12px;background:linear-gradient(135deg,#212a55,#2a3a7a);display:grid;place-items:center">
+            <svg width="64" height="48" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="80" rx="8" fill="#2b3868"/><circle cx="30" cy="40" r="18" fill="#8ff4cf"/><rect x="60" y="28" width="44" height="12" rx="6" fill="#6c8cff"/></svg>
+          </div>
+        </div>
+        <div class="cards" style="margin-top:14px">
+          <div class="kpi"><div class="muted">Balance</div><div style="font-weight:800" id="demoBal">$0.00</div></div>
+          <div class="kpi"><div class="muted">Earnings (30d)</div><div id="demoEarn">$0.00</div></div>
+          <div class="kpi"><div class="muted">Active Plan</div><div id="demoPlan">—</div></div>
+          <div class="kpi"><div class="muted">Risk</div><div><span class="badge">Moderate</span></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- PLANS -->
+  <section id="plans" class="container">
+    <h2 class="section-title">Choose a plan</h2>
+    <p class="section-sub">Pick a package to start. All is simulated here — real deployment requires backend/payment integration.</p>
+    <div class="plans" id="plansGrid">
+      <div class="card">
+        <div class="pill muted">Up to 12% / 30d</div>
+        <h3>Starter</h3>
+        <div class="price">$100 – $999</div>
+        <ul class="features"><li>Instant activation</li><li>Basic analytics</li></ul>
+        <div style="margin-top:10px"><button class="btn ghost buy" data-plan="Starter" data-min="50" data-max="999" data-rate="0.12">Select Starter</button></div>
+      </div>
+      <div class="card badge">
+        <div class="pill muted">Up to 20% / 30d</div>
+        <h3>Pro</h3>
+        <div class="price">$1,000 – $9,999</div>
+        <ul class="features"><li>Advanced analytics</li><li>Auto compounding</li></ul>
+        <div style="margin-top:10px"><button class="btn primary buy" data-plan="Pro" data-min="1000" data-max="9999" data-rate="0.20">Select Pro</button></div>
+      </div>
+      <div class="card">
+        <div class="pill muted">Up to 28% / 30d</div>
+        <h3>Elite</h3>
+        <div class="price">$10,000 – $100,000</div>
+        <ul class="features"><li>Dedicated manager</li><li>Institutional tools</li></ul>
+        <div style="margin-top:10px"><button class="btn ghost buy" data-plan="Elite" data-min="10000" data-max="100000" data-rate="0.28">Select Elite</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT & CONTACT -->
+  <section id="about" class="container grid-2" style="align-items:start">
+    <div>
+      <h2 class="section-title">About S Growvest</h2>
+      <p class="section-sub">We are a trusted investment UI demo focused on clarity and trust. Replace these texts with your official company story when ready.</p>
+      <div class="card">
+        <h3 style="margin-top:0">Why choose S Growvest?</h3>
+        <ul class="features">
+          <li>Beautiful, responsive UI</li>
+          <li>Admin controls for balance updates</li>
+          <li>Simple crypto deposit flow (copy address)</li>
+        </ul>
+      </div>
+    </div>
+    <div id="contact">
+      <h2 class="section-title">Contact</h2>
+      <form id="contactForm" class="card" novalidate>
+        <div class="grid-2">
+          <input class="input" name="name" placeholder="Full name" required />
+          <input class="input" name="email" type="email" placeholder="Email address" required />
+        </div>
+        <select class="input" name="topic" required>
+          <option value="">Select topic</option><option>General</option><option>Plans</option><option>Support</option>
+        </select>
+        <textarea class="input" name="message" placeholder="Write your message..." required></textarea>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
+          <button type="reset" class="btn ghost">Reset</button>
+          <button class="btn primary" type="submit">Send message</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- AUTH MODALS (Login / Signup / Forgot) -->
+  <div class="modal" id="loginModal" aria-hidden="true">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Login</h3><button class="btn ghost" data-close>Close</button>
+      </div>
+      <form id="loginForm">
+        <input class="input" name="email" type="email" placeholder="Email" required />
+        <input class="input" name="password" type="password" placeholder="Password" required style="margin-top:10px" />
+        <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
+          <button type="button" class="btn ghost" data-close>Cancel</button>
+          <button type="submit" class="btn primary">Sign in</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="signupModal" aria-hidden="true">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Create account</h3><button class="btn ghost" data-close>Close</button>
+      </div>
+      <form id="signupForm">
+        <div class="grid-2">
+          <input class="input" name="first" placeholder="First name" required />
+          <input class="input" name="last" placeholder="Last name" required />
+        </div>
+        <input class="input" name="email" type="email" placeholder="Email" required style="margin-top:10px" />
+        <input class="input" name="password" type="password" placeholder="Password (min 6)" minlength="6" required style="margin-top:10px" />
+        <select class="input" name="country" required style="margin-top:10px">
+          <option value="">Country</option><option>Nigeria</option><option>Kenya</option><option>Ghana</option><option>USA</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);margin-top:10px"><input type="checkbox" name="agree" required/> I agree to Terms & Privacy</label>
+        <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
+          <button type="button" class="btn ghost" data-close>Cancel</button>
+          <button type="submit" class="btn primary">Create account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard (user) -->
+  <section id="dashboard" class="container dashboard" aria-hidden="true">
+    <div class="dash-wrap">
+      <aside class="side">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div class="avatar"></div>
+          <div>
+            <div id="userName" style="font-weight:700">User</div>
+            <div class="muted" id="userEmail" style="font-size:13px"></div>
+          </div>
+        </div>
+        <nav style="margin-top:14px">
+          <a href="#" class="active" data-tab="overview">Overview</a>
+          <a href="#" data-tab="deposit">Deposit</a>
+          <a href="#" data-tab="plans">Plans</a>
+          <a href="#" data-tab="transactions">Transactions</a>
+          <a href="#" data-tab="profile">Profile</a>
+          <a href="#" id="logoutBtn" style="color:var(--danger);margin-top:8px;display:block">Logout</a>
+        </nav>
+      </aside>
+
+      <div class="panels">
+        <div class="panel active" id="tab-overview">
+          <h3 style="margin-top:0">Portfolio overview</h3>
+          <div class="cards" style="margin-bottom:12px">
+            <div class="kpi"><div class="muted">Total balance</div><div id="kpiBalance" style="font-weight:800">$0.00</div></div>
+            <div class="kpi"><div class="muted">Earnings (30d)</div><div id="kpiEarn">$0.00</div></div>
+            <div class="kpi"><div class="muted">Active plan</div><div id="kpiPlan">—</div></div>
+            <div class="kpi"><div class="muted">Deposits</div><div id="kpiDeposits">$0.00</div></div>
+          </div>
+          <div class="panel">
+            <h4 style="margin:0 0 8px 0">Transaction History</h4>
+            <table class="table" id="txTable">
+              <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel" id="tab-deposit" style="display:none">
+          <h3 style="margin-top:0">Deposit funds</h3>
+          <form id="depositForm">
+            <label>Choose plan (selected plan)</label>
+            <input class="input" name="plan" readonly />
+            <label style="margin-top:10px">Amount (USD)</label>
+            <input class="input" name="amount" type="number" min="10" step="1" required />
+            <label style="margin-top:10px">Method</label>
+            <select class="input" name="method" required>
+              <option value="">Select method</option><option>BTC</option><option>USDT</option>
+            </select>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
+              <button type="reset" class="btn ghost">Reset</button>
+              <button class="btn primary" type="submit">Proceed to wallet</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel" id="tab-wallet" style="display:none">
+          <h3 style="margin-top:0">Send funds</h3>
+          <div id="walletBox" class="card">
+            <!-- wallet info injected here -->
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn ghost" id="walletCancel">Cancel</button>
+            <button class="btn primary" id="walletConfirm">I have sent funds (Confirm)</button>
+          </div>
+        </div>
+
+        <div class="panel" id="tab-plans" style="display:none">
+          <h3 style="margin-top:0">Activate a plan</h3>
+          <p class="muted">Select from available plans.</p>
+          <div class="plans">
+            <!-- duplicate plan cards for inside dashboard -->
+            <div class="card"><h4>Starter</h4><div class="pill muted">12% / 30d</div><div class="features">Range $50 - $999</div><div style="margin-top:10px"><button class="btn ghost act-plan" data-plan="Starter" data-rate="0.12">Activate Starter</button></div></div>
+            <div class="card badge"><h4>Pro</h4><div class="pill muted">20% / 30d</div><div class="features">Range $1,000 - $9,999</div><div style="margin-top:10px"><button class="btn primary act-plan" data-plan="Pro" data-rate="0.20">Activate Pro</button></div></div>
+            <div class="card"><h4>Elite</h4><div class="pill muted">28% / 30d</div><div class="features">Range $10,000 - $100,000</div><div style="margin-top:10px"><button class="btn ghost act-plan" data-plan="Elite" data-rate="0.28">Activate Elite</button></div></div>
+          </div>
+        </div>
+
+        <div class="panel" id="tab-transactions" style="display:none">
+          <h3 style="margin-top:0">Transactions (All)</h3>
+          <table class="table" id="txTableAll">
+            <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th></
